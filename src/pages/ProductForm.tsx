@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useCategories } from '../api/categories'
 import { useCreateProduct, useProduct, useUpdateProduct } from '../api/products'
+import { fetchProductByBarcode } from '../api/openFoodFacts'
 import type { Product, ProductInput } from '../api/types'
+import BarcodeScanner from '../components/BarcodeScanner'
 
 function inDays(days: number): string {
   const date = new Date()
@@ -23,6 +25,10 @@ function Form({ product }: { product?: Product }) {
   const [expiry, setExpiry] = useState(product?.expiry_date ?? '')
   const [notes, setNotes] = useState(product?.notes ?? '')
 
+  const [scanning, setScanning] = useState(false)
+  const [scanStatus, setScanStatus] = useState<string | null>(null)
+  const expiryRef = useRef<HTMLInputElement>(null)
+
   const mutation = product ? update : create
 
   function onCategoryChange(value: string) {
@@ -32,6 +38,24 @@ function Form({ product }: { product?: Product }) {
     if (!product && !expiry) {
       const selected = categories.data?.find((c) => c.name === value)
       if (selected) setExpiry(inDays(selected.default_expiry_days))
+    }
+  }
+
+  async function onBarcode(ean: string) {
+    setScanning(false)
+    setScanStatus('Recherche du produit…')
+    try {
+      const found = await fetchProductByBarcode(ean)
+      if (!found) {
+        setScanStatus('Produit introuvable, saisissez-le à la main.')
+        return
+      }
+      setName(found.name.slice(0, 200))
+      if (found.category) setCategory(found.category.slice(0, 100))
+      setScanStatus(null)
+      expiryRef.current?.focus()
+    } catch (e) {
+      setScanStatus(e instanceof Error ? e.message : 'Recherche du produit impossible')
     }
   }
 
@@ -57,7 +81,16 @@ function Form({ product }: { product?: Product }) {
         <h1>{product ? 'Modifier' : 'Nouveau produit'}</h1>
         <Link to="/">Annuler</Link>
       </header>
+      {scanning && <BarcodeScanner onDetect={onBarcode} onClose={() => setScanning(false)} />}
       <form onSubmit={onSubmit}>
+        {!product && (
+          <>
+            <button type="button" onClick={() => setScanning(true)}>
+              Scanner un code-barres
+            </button>
+            {scanStatus && <p role="status" className="muted">{scanStatus}</p>}
+          </>
+        )}
         <label>
           Nom
           <input required maxLength={200} value={name} onChange={(e) => setName(e.target.value)} />
@@ -103,7 +136,7 @@ function Form({ product }: { product?: Product }) {
         </label>
         <label>
           Date de péremption
-          <input type="date" required value={expiry} onChange={(e) => setExpiry(e.target.value)} />
+          <input ref={expiryRef} type="date" required value={expiry} onChange={(e) => setExpiry(e.target.value)} />
         </label>
         <label>
           Notes
