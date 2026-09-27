@@ -1,13 +1,21 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useCategories } from '../api/categories'
 import { useCreateProduct, useProduct, useUpdateProduct } from '../api/products'
 import type { Product, ProductInput } from '../api/types'
+
+function inDays(days: number): string {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return date.toISOString().slice(0, 10)
+}
 
 function Form({ product }: { product?: Product }) {
   const navigate = useNavigate()
   const create = useCreateProduct()
   const update = useUpdateProduct()
+  const categories = useCategories()
   const [name, setName] = useState(product?.name ?? '')
   const [quantity, setQuantity] = useState(String(product?.quantity ?? 1))
   const [unit, setUnit] = useState(product?.unit ?? '')
@@ -16,6 +24,16 @@ function Form({ product }: { product?: Product }) {
   const [notes, setNotes] = useState(product?.notes ?? '')
 
   const mutation = product ? update : create
+
+  function onCategoryChange(value: string) {
+    setCategory(value)
+    // Pré-remplit la date de péremption suggérée par la catégorie, seulement à la création
+    // et si l'utilisateur n'a pas déjà choisi une date lui-même.
+    if (!product && !expiry) {
+      const selected = categories.data?.find((c) => c.name === value)
+      if (selected) setExpiry(inDays(selected.default_expiry_days))
+    }
+  }
 
   function onSubmit(event: FormEvent) {
     event.preventDefault()
@@ -69,7 +87,19 @@ function Form({ product }: { product?: Product }) {
         </div>
         <label>
           Catégorie
-          <input maxLength={100} value={category} onChange={(e) => setCategory(e.target.value)} />
+          <select value={category} onChange={(e) => onCategoryChange(e.target.value)}>
+            <option value="">Aucune catégorie</option>
+            {categories.data?.map((c) => (
+              <option key={c.id} value={c.name}>
+                {c.emoji} {c.name}
+              </option>
+            ))}
+            {/* Conserve l'affichage d'une catégorie existante (produit déjà créé) qui ne
+                figurerait plus dans la liste. */}
+            {category && !categories.data?.some((c) => c.name === category) && (
+              <option value={category}>{category}</option>
+            )}
+          </select>
         </label>
         <label>
           Date de péremption

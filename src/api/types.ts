@@ -8,6 +8,16 @@ export interface Token {
   token_type: string
 }
 
+export interface Category {
+  id: number
+  user_id: number | null
+  name: string
+  emoji: string
+  default_expiry_days: number
+  created_at: string
+  is_default: boolean
+}
+
 export interface Product {
   id: number
   name: string
