@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import basicSsl from '@vitejs/plugin-basic-ssl'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -7,6 +8,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [
     react(),
+    // HTTPS auto-signé en dev : la caméra (getUserMedia) exige un contexte sécurisé
+    // quand on ouvre l'app depuis un téléphone via l'IP du Mac.
+    basicSsl(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon-180x180.png'],
@@ -40,6 +44,7 @@ export default defineConfig({
     }),
   ],
   server: {
+    host: true,
     proxy: {
       '/api': 'http://localhost:8000',
     },
