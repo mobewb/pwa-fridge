@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useCategories } from '../api/categories'
 import { EXPIRING_DAYS, useExpiringProducts, useProducts } from '../api/products'
 import { useAuth } from '../auth/AuthContext'
 import ProductCard from '../components/ProductCard'
@@ -12,6 +13,7 @@ export default function Products() {
   const [tab, setTab] = useState<Tab>('expiring')
   const [status, setStatus] = useState<Status>('active')
   const [category, setCategory] = useState('')
+  const categories = useCategories()
 
   const expiring = useExpiringProducts()
   const all = useProducts({
@@ -50,12 +52,14 @@ export default function Products() {
             <option value="consumed">Consommés</option>
             <option value="any">Tous</option>
           </select>
-          <input
-            type="search"
-            placeholder="Catégorie exacte"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="">Toutes les catégories</option>
+            {categories.data?.map((c) => (
+              <option key={c.id} value={c.name}>
+                {c.emoji} {c.name}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 

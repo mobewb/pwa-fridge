@@ -149,7 +149,8 @@ button.danger {
   margin-bottom: 1rem;
 }
 
-.filters input {
+.filters input,
+.filters select {
   flex: 1;
   min-width: 0;
 }
