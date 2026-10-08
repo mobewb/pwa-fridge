@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useCategories } from '../api/categories'
@@ -10,7 +10,9 @@ import BarcodeScanner from '../components/BarcodeScanner'
 function inDays(days: number): string {
   const date = new Date()
   date.setDate(date.getDate() + days)
-  return date.toISOString().slice(0, 10)
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
 }
 
 function Form({ product }: { product?: Product }) {
@@ -28,6 +30,13 @@ function Form({ product }: { product?: Product }) {
   const [scanning, setScanning] = useState(false)
   const [scanStatus, setScanStatus] = useState<string | null>(null)
   const expiryRef = useRef<HTMLInputElement>(null)
+  // Identifie le dernier scan ; 0 une fois démonté pour ignorer les réponses tardives.
+  const scanIdRef = useRef(0)
+  useEffect(() => {
+    return () => {
+      scanIdRef.current = -1
+    }
+  }, [])
 
   const mutation = product ? update : create
 
@@ -42,19 +51,28 @@ function Form({ product }: { product?: Product }) {
   }
 
   async function onBarcode(ean: string) {
+    const scanId = ++scanIdRef.current
     setScanning(false)
     setScanStatus('Recherche du produit…')
     try {
       const found = await fetchProductByBarcode(ean)
+      if (scanId !== scanIdRef.current) return
       if (!found) {
         setScanStatus('Produit introuvable, saisissez-le à la main.')
         return
       }
       setName(found.name.slice(0, 200))
-      if (found.category) setCategory(found.category.slice(0, 100))
+      // Ne retient la catégorie d'Open Food Facts que si elle correspond à une catégorie
+      // du backend ; sinon on la laisse vide plutôt que d'en créer une inconnue.
+      const wanted = found.category?.trim().toLowerCase()
+      const match = wanted
+        ? categories.data?.find((c) => c.name.toLowerCase() === wanted)
+        : undefined
+      if (match) onCategoryChange(match.name)
       setScanStatus(null)
       expiryRef.current?.focus()
     } catch (e) {
+      if (scanId !== scanIdRef.current) return
       setScanStatus(e instanceof Error ? e.message : 'Recherche du produit impossible')
     }
   }
@@ -120,19 +138,24 @@ function Form({ product }: { product?: Product }) {
         </div>
         <label>
           Catégorie
-          <select value={category} onChange={(e) => onCategoryChange(e.target.value)}>
-            <option value="">Aucune catégorie</option>
-            {categories.data?.map((c) => (
-              <option key={c.id} value={c.name}>
-                {c.emoji} {c.name}
-              </option>
-            ))}
-            {/* Conserve l'affichage d'une catégorie existante (produit déjà créé) qui ne
-                figurerait plus dans la liste. */}
-            {category && !categories.data?.some((c) => c.name === category) && (
-              <option value={category}>{category}</option>
-            )}
-          </select>
+          {categories.data ? (
+            <select value={category} onChange={(e) => onCategoryChange(e.target.value)}>
+              <option value="">Aucune catégorie</option>
+              {categories.data.map((c) => (
+                <option key={c.id} value={c.name}>
+                  {c.emoji} {c.name}
+                </option>
+              ))}
+              {/* Conserve l'affichage d'une catégorie existante (produit déjà créé) qui ne
+                  figurerait plus dans la liste. */}
+              {category && !categories.data.some((c) => c.name === category) && (
+                <option value={category}>{category}</option>
+              )}
+            </select>
+          ) : (
+            // Liste indisponible (chargement, erreur, hors-ligne) : saisie libre en repli.
+            <input maxLength={100} value={category} onChange={(e) => setCategory(e.target.value)} />
+          )}
         </label>
         <label>
           Date de péremption

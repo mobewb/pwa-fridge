@@ -5,12 +5,12 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     react(),
-    // HTTPS auto-signé en dev : la caméra (getUserMedia) exige un contexte sécurisé
-    // quand on ouvre l'app depuis un téléphone via l'IP du Mac.
-    basicSsl(),
+    // HTTPS auto-signé en dev uniquement : la caméra (getUserMedia) exige un contexte
+    // sécurisé quand on ouvre l'app depuis un téléphone via l'IP du Mac.
+    ...(command === 'serve' ? [basicSsl()] : []),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon-180x180.png'],
@@ -54,4 +54,4 @@ export default defineConfig({
     setupFiles: ['./src/test-setup.ts'],
     globals: true,
   },
-})
+}))
