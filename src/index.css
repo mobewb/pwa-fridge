@@ -268,3 +268,36 @@ button.danger {
   object-fit: cover;
   border-radius: 12px;
 }
+
+.shop-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+.shop-form input {
+  flex: 1 1 8rem;
+}
+.shop-form .shop-qty {
+  flex: 0 0 4rem;
+}
+.shop-group h2 {
+  font-size: 1rem;
+  margin: 1rem 0 0.25rem;
+}
+.shop-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.shop-item.checked span {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+.shop-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}

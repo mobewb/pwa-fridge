@@ -27,6 +27,7 @@ export default function Products() {
     <div className="page">
       <header className="topbar">
         <h1>🧊 Fridge</h1>
+        <Link to="/shop">🛒 Courses</Link>
         <button onClick={logout} title={user?.email}>
           Déconnexion
         </button>
