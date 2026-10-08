@@ -45,3 +45,29 @@ export interface ProductInput {
 }
 
 export type ProductPatch = Partial<ProductInput> & { consumed?: boolean }
+
+export interface Household {
+  id: number
+  name: string
+  invite_code: string
+  members: User[]
+}
+
+export interface ShopItem {
+  id: number
+  household_id: number
+  name: string
+  quantity: string
+  category: string | null
+  checked: boolean
+  added_by: number
+  created_at: string
+}
+
+export interface ShopItemInput {
+  name: string
+  quantity?: string
+  category?: string | null
+}
+
+export type ShopItemPatch = Partial<ShopItemInput> & { checked?: boolean }
