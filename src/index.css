@@ -36,7 +36,7 @@ a {
 .auth {
   max-width: 640px;
   margin: 0 auto;
-  padding: 1rem 1rem 6rem;
+  padding: 1rem 1rem 9rem;
 }
 
 .auth {
@@ -226,7 +226,7 @@ button.danger {
 .fab {
   position: fixed;
   right: max(1rem, env(safe-area-inset-right));
-  bottom: max(1rem, env(safe-area-inset-bottom));
+  bottom: calc(5.5rem + env(safe-area-inset-bottom));
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -237,6 +237,42 @@ button.danger {
   text-align: center;
   text-decoration: none;
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.25);
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
+  background: var(--card);
+  border-top: 1px solid var(--border);
+}
+.bottom-nav-link {
+  flex: 1;
+  max-width: 14rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.bottom-nav-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.bottom-nav-link.active {
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+  color: var(--green);
 }
 
 @media (prefers-color-scheme: dark) {

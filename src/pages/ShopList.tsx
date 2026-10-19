@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
 import { useCategories } from '../api/categories'
 import {
   useAddShopItem,
@@ -12,6 +11,7 @@ import {
   useShopItems,
   useUpdateShopItem,
 } from '../api/shopList'
+import BottomNav from '../components/BottomNav'
 import { groupByCategory } from '../lib/groupByCategory'
 
 function HouseholdSetup() {
@@ -93,7 +93,6 @@ export default function ShopList() {
     <div className="page">
       <header className="topbar">
         <h1>🛒 Courses</h1>
-        <Link to="/">Frigo</Link>
       </header>
 
       {household.isPending && <p className="center muted">Chargement…</p>}
@@ -197,6 +196,7 @@ export default function ShopList() {
           </div>
         </>
       )}
+      <BottomNav />
     </div>
   )
 }

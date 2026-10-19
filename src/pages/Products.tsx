@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useCategories } from '../api/categories'
 import { EXPIRING_DAYS, useExpiringProducts, useProducts } from '../api/products'
 import { useAuth } from '../auth/AuthContext'
+import BottomNav from '../components/BottomNav'
 import ProductCard from '../components/ProductCard'
 
 type Tab = 'expiring' | 'all'
@@ -27,7 +28,6 @@ export default function Products() {
     <div className="page">
       <header className="topbar">
         <h1>🧊 Fridge</h1>
-        <Link to="/shop">🛒 Courses</Link>
         <button onClick={logout} title={user?.email}>
           Déconnexion
         </button>
@@ -87,6 +87,7 @@ export default function Products() {
       <Link to="/products/new" className="fab" aria-label="Ajouter un produit">
         +
       </Link>
+      <BottomNav />
     </div>
   )
 }
