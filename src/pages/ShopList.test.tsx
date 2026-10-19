@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import ShopList from './ShopList'
@@ -33,15 +33,14 @@ afterEach(() => vi.unstubAllGlobals())
 
 describe('ShopList', () => {
   it("propose de créer ou rejoindre un foyer s'il n'y en a pas", async () => {
-    routeFetch({ '/household': [404, { detail: 'none' }], '/categories': [200, []] })
+    routeFetch({ '/households': [200, []], '/categories': [200, []] })
     renderPage()
     expect(await screen.findByLabelText("Code d'invitation")).toBeInTheDocument()
   })
 
   it('affiche les articles groupés par catégorie', async () => {
     routeFetch({
-      '/household': [200, { id: 1, name: 'Maison', invite_code: 'ABC12345', members: [] }],
-      '/shop-items': [
+      '/households/1/shop-items': [
         200,
         [
           {
@@ -50,6 +49,7 @@ describe('ShopList', () => {
           },
         ],
       ],
+      '/households': [200, [{ id: 1, name: 'Maison', invite_code: 'ABC12345', members: [] }]],
       '/categories': [
         200,
         [{ id: 1, user_id: null, name: 'Fruits', emoji: '🍎', default_expiry_days: 5, created_at: '', is_default: true }],
@@ -58,6 +58,35 @@ describe('ShopList', () => {
     renderPage()
     expect(await screen.findByText('Pommes')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /Fruits/ })).toBeInTheDocument()
+    expect(screen.queryByText('ABC12345')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByLabelText("Afficher le code d'invitation"))
     expect(screen.getByText('ABC12345')).toBeInTheDocument()
+  })
+
+  it("permet de passer d'un foyer à un autre", async () => {
+    routeFetch({
+      '/households/2/shop-items': [
+        200,
+        [
+          {
+            id: 9, household_id: 2, name: 'Pain', quantity: '1', category: null,
+            checked: false, added_by: 1, created_at: '',
+          },
+        ],
+      ],
+      '/households/1/shop-items': [200, []],
+      '/households': [
+        200,
+        [
+          { id: 1, name: 'Maison', invite_code: 'AAA', members: [] },
+          { id: 2, name: 'Bureau', invite_code: 'BBB', members: [] },
+        ],
+      ],
+      '/categories': [200, []],
+    })
+    renderPage()
+    const select = await screen.findByLabelText('Foyer')
+    fireEvent.change(select, { target: { value: '2' } })
+    expect(await screen.findByText('Pain')).toBeInTheDocument()
   })
 })
