@@ -32,7 +32,7 @@ describe('groupByCategory', () => {
 
   it('range les catégories inconnues ou vides dans Autres, en dernier', () => {
     const groups = groupByCategory([item(1, null), item(2, 'Inconnue'), item(3, 'Fruits')], categories)
-    expect(groups.map((g) => g.name)).toEqual(['Fruits', 'Autres'])
+    expect(groups.map((g) => g.name)).toEqual(['Fruits', 'Sans catégorie'])
     expect(groups[1].items).toHaveLength(2)
   })
 

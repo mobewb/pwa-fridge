@@ -1,6 +1,6 @@
 import type { Category, ShopItem } from '../api/types'
 
-export const OTHER_CATEGORY = 'Autres'
+export const OTHER_CATEGORY = 'Sans catégorie'
 
 export interface ShopGroup {
   name: string

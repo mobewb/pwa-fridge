@@ -128,7 +128,7 @@ export default function ShopList() {
               onChange={(e) => setCategory(e.target.value)}
               aria-label="Catégorie"
             >
-              <option value="">Autres</option>
+              <option value="">Sans catégorie</option>
               {categories.data?.map((c) => (
                 <option key={c.id} value={c.name}>
                   {c.emoji} {c.name}
